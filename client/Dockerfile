@@ -1,18 +1,19 @@
-# Stage 1: Base build using Node
-FROM node:18-alpine AS base
+FROM node:23.11.0 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
 COPY package*.json ./
 RUN npm install --production
-
-# Copy full code
 COPY . .
 
-# Expose backend port
-EXPOSE 5000
+RUN npm run build
 
-# Run the app
-CMD ["npm", "start"]
+# using Nginx
+
+FROM nginx:alpine
+
+COPY --from=build /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
